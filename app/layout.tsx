@@ -37,6 +37,9 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, creator: "@Akashsoni_30" },
   robots: { index: true, follow: true },
+  // Google Search Console ownership check. Paste the code from Search Console
+  // (HTML tag method) into the GOOGLE_SITE_VERIFICATION environment variable.
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
   formatDetection: { telephone: true },
 };
 
@@ -52,6 +55,9 @@ const structuredData = {
       "@type": "Person",
       "@id": `${siteUrl}/#person`,
       name: profile.name,
+      alternateName: "Bhalani Akash",
+      givenName: profile.firstName,
+      familyName: profile.lastName,
       url: siteUrl,
       image: absoluteUrl(profile.portrait.src),
       jobTitle: profile.role,

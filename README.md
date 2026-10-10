@@ -46,6 +46,7 @@ Every claim in these files was checked against the resume (`data/Akash_Soni-1.pd
 
 | Setting | Where | Notes |
 | --- | --- | --- |
+| Search Console | `GOOGLE_SITE_VERIFICATION` env var | The `content` value of Google's HTML verification tag. Optional. |
 | Site URL | `NEXT_PUBLIC_SITE_URL` env var | Defaults to `https://bhalaniakash.github.io`. Drives canonical URLs, sitemap, robots and Open Graph tags. Set it to the real domain before deploying. |
 | Contact form | `contactEndpoint` in `lib/site.ts` | Uses the same Formspree form as the original site (`mldnlylp`). The form shows success only after Formspree confirms delivery, and otherwise shows the error with a mailto fallback. A honeypot field (`_gotcha`) filters basic spam. |
 
@@ -82,7 +83,7 @@ The site is not deployed. Choose a host first:
 ## Google Search Console checklist
 
 1. Deploy, and set `NEXT_PUBLIC_SITE_URL` to the final domain.
-2. In [Search Console](https://search.google.com/search-console), add a property. Use a Domain property (DNS TXT record) for a custom domain, or a URL-prefix property verified with an HTML tag. For the tag, add `verification: { google: "..." }` to `metadata` in `app/layout.tsx`.
+2. In [Search Console](https://search.google.com/search-console), add a **URL prefix** property for the site address. Choose the **HTML tag** method, copy only the `content` value, set it as the `GOOGLE_SITE_VERIFICATION` environment variable in Vercel, redeploy, then click Verify. (A custom domain can use a Domain property with a DNS TXT record instead.)
 3. Under **Sitemaps**, submit `https://<domain>/sitemap.xml`.
 4. Use **URL Inspection** on `/` and each `/projects/...` page, and choose **Request indexing**.
 5. Watch **Pages** (indexing report) for errors such as "Crawled, currently not indexed" or redirect problems.
