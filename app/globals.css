@@ -1,0 +1,343 @@
+@import "tailwindcss";
+
+/* Design tokens. The palette is a cool near-black with a single violet accent
+   and a quieter indigo used only inside gradients. */
+@theme {
+  --color-ink: #0a0a0f;
+  --color-ink-2: #101018;
+  --color-surface: #15151f;
+  --color-surface-2: #1c1c29;
+  --color-line: rgb(255 255 255 / 0.09);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+  --color-fg: #ecebf3;
+  --color-fg-muted: #a3a2b8;
+  --color-fg-subtle: #8a89a0;
+  --color-accent: #a594ff;
+  --color-accent-strong: #8b78ff;
+  --color-accent-soft: rgb(165 148 255 / 0.14);
+  --color-indigo: #6d7cff;
+  --color-success: #6ee7b7;
+  --color-danger: #fda4af;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --text-display: clamp(3.5rem, 17vw, 11.5rem);
+  --text-display--line-height: 0.86;
+  --text-display--letter-spacing: -0.045em;
+  --text-h2: clamp(2.25rem, 6vw, 4.75rem);
+  --text-h2--line-height: 0.98;
+  --text-h2--letter-spacing: -0.035em;
+}
+
+:root {
+  color-scheme: dark;
+  --header-h: 4rem;
+}
+
+@layer base {
+  html {
+    background: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
+  /* No global smooth scrolling: it would also animate the browser's own jump
+     to a #hash on load, toward a position measured before fonts settle.
+     In-page links request smooth scrolling explicitly (motion-scope.tsx). */
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  .container-page {
+    width: 100%;
+    max-width: 88rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-fg-subtle);
+  }
+
+  .serif-accent {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .hairline {
+    background: linear-gradient(90deg, transparent, var(--color-line-strong) 20%, var(--color-line-strong) 80%, transparent);
+    height: 1px;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+}
+
+/* Scroll reveals, driven by the scroll position itself (CSS scroll-driven
+   animations). No script touches these elements, so they cannot disagree with
+   React during hydration. Browsers without view timelines, and visitors who
+   prefer reduced motion, simply see the content in place.
+   --reveal-step (0, 1, 2...) staggers siblings by shifting their range.
+   Note: a view timeline follows the nearest scroll container, and
+   overflow: hidden creates one. Wrap reveals in overflow: clip instead. */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: var(--reveal-from, translate3d(0, 28px, 0));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-mask {
+  from {
+    clip-path: inset(0 0 100% 0 round 1rem);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 1rem);
+  }
+}
+
+/* Direction variants: headings tend to arrive from the left, supporting
+   copy from the right, imagery from below or through a mask. */
+.reveal[data-reveal="left"] {
+  --reveal-from: translate3d(-56px, 0, 0);
+}
+.reveal[data-reveal="right"] {
+  --reveal-from: translate3d(56px, 0, 0);
+}
+.reveal[data-reveal="scale"] {
+  --reveal-from: scale(0.94);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal:not([data-reveal="clip"]) {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: cover calc(var(--reveal-step, 0) * 2%) cover calc(14% + var(--reveal-step, 0) * 2%);
+    }
+    /* The mask runs on the children, so the element's own box stays intact. */
+    .reveal[data-reveal="clip"] > * {
+      animation: reveal-mask linear both;
+      animation-timeline: view();
+      animation-range: cover calc(var(--reveal-step, 0) * 3%) cover calc(30% + var(--reveal-step, 0) * 3%);
+    }
+  }
+}
+
+/* Hero pin: the hero holds still while the first page slides over it. The
+   top offset is set by MotionScope so a tall hero still scrolls fully. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-hero] {
+    position: sticky;
+    z-index: 0;
+  }
+}
+
+/* Timeline markers stay hollow until the drawn line reaches them. Without
+   JavaScript they are shown filled. */
+.js .timeline-marker > span {
+  transform: scale(0.35);
+  opacity: 0.6;
+  transition:
+    transform 0.5s var(--ease-out-expo),
+    opacity 0.5s;
+}
+.js .timeline-marker.is-passed > span {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Selected work: a vertical list by default; on large screens with motion
+   allowed it becomes a pinned horizontal stage (see work-gallery.tsx). */
+.work-track {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .js .work-stage {
+    height: calc(var(--panels, 3) * 85vh + 15vh);
+  }
+  .js .work-viewport {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: clip;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .js .work-track {
+    flex-direction: row;
+    gap: 6vw;
+    width: max-content;
+    padding-inline: max(2.5rem, calc((100vw - 88rem) / 2 + 2.5rem));
+  }
+  .js .work-panel {
+    width: min(80vw, 78rem);
+    flex: none;
+  }
+  .js .work-hud {
+    display: flex;
+  }
+  .js .work-stage .reveal,
+  .js .work-stage .reveal > * {
+    animation: none;
+  }
+}
+
+/* Hero headline: each line rises out of a mask. Pure CSS so it renders on
+   the server and never waits for hydration. */
+.mask-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.mask-line > span {
+  display: block;
+  animation: rise 1.25s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.word-mask > span {
+  display: inline-block;
+  animation: rise 1s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.fade-in {
+  animation: fade-up 1s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes rise {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+/* Page transitions: the project image morphs between the card and the case
+   study hero. Everything else crossfades quickly. */
+::view-transition-group(.morph) {
+  animation-duration: 550ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
